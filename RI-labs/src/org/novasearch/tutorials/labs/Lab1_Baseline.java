@@ -26,6 +26,7 @@ public class Lab1_Baseline {
 	String indexPath = "./index";
 	String docPath = "./eval/Answers.csv";
     String resultsPath = "./eval/myresults.txt";
+	String queriesPath = "./eval/queries.offline.txt";
 
 	boolean create = true;
 
@@ -95,6 +96,7 @@ public class Lab1_Baseline {
 
 			// ====================================================
 			// Read documents
+			System.out.println("adding documents...");
 			while (line != null) {
 				int i = line.length();
 
@@ -112,8 +114,8 @@ public class Lab1_Baseline {
 				}
 				line = br.readLine();
 			}
+			System.out.println("documents added.");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -126,6 +128,8 @@ public class Lab1_Baseline {
 		// Each document is organized as:
 		// Id,OwnerUserId,CreationDate,ParentId,Score,Body
 		Integer AnswerId = 0;
+		int errorAddCounter = 0;
+		int errorParseCounter = 0;
 		try {
 
 			// Extract field Id
@@ -178,15 +182,17 @@ public class Lab1_Baseline {
 		// ====================================================
 		// Add the document to the index
 			if (idx.getConfig().getOpenMode() == IndexWriterConfig.OpenMode.CREATE) {
-				System.out.println("adding " + AnswerId);
+				//System.out.println("adding " + AnswerId);
 				idx.addDocument(doc);
 			} else {
 				idx.updateDocument(new Term("AnswerId", AnswerId.toString()), doc);
 			}
 		} catch (IOException e) {
-			System.out.println("Error adding document " + AnswerId);
+			// System.out.println("Error adding document " + AnswerId);
+			errorAddCounter++;
 		} catch (Exception e) {
-		System.out.println("Error parsing document " + AnswerId);
+			// System.out.println("Error parsing document " + AnswerId);
+			errorParseCounter++;
 		}
 	}
 
@@ -195,6 +201,7 @@ public class Lab1_Baseline {
 	public void indexSearch(Analyzer analyzer, Similarity similarity) {
 
 		IndexReader reader = null;
+		BufferedReader in = null;
 		try {
 			reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
 			IndexSearcher searcher = new IndexSearcher(reader);
@@ -202,10 +209,14 @@ public class Lab1_Baseline {
 
             BufferedWriter writer = new BufferedWriter(new FileWriter(resultsPath));
 
-			BufferedReader in = null;
-			in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
-			Integer qid = -1;
+			//in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+			// This reader parses from the commandline
+			// in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+			
+			// This reader parses from queries-file
+			in = new BufferedReader(new FileReader(queriesPath));
 
+			Integer qid = -1;
 
 			QueryParser parser = new QueryParser("Body", analyzer);
 			while (true) {
@@ -221,6 +232,8 @@ public class Lab1_Baseline {
 				if (line.length() == 0) {
 					break;
 				}
+				
+				System.out.println("Your query: " + line);
 
 				Query query;
 				try {
@@ -240,6 +253,10 @@ public class Lab1_Baseline {
 
 
 
+
+				if (qid != 0){
+                    writer.write("\n");
+                }
 				for (int j = 0; j < hits.length; j++) {
 					Document doc = searcher.doc(hits[j].doc);
 					Integer Id = doc.getField("AnswerId").numericValue().intValue();
@@ -263,6 +280,14 @@ public class Lab1_Baseline {
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
+		}
+		finally {
+			if(in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 		}
 	}
 
