@@ -14,10 +14,7 @@ import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -28,6 +25,7 @@ public class Lab1_Baseline {
 
 	String indexPath = "./index";
 	String docPath = "./eval/Answers.csv";
+    String resultsPath = "./eval/myresults.txt";
 	String queriesPath = "./eval/queries.offline.txt";
 
 	boolean create = true;
@@ -213,6 +211,9 @@ public class Lab1_Baseline {
 			IndexSearcher searcher = new IndexSearcher(reader);
 			searcher.setSimilarity(similarity);
 
+            BufferedWriter writer = new BufferedWriter(new FileWriter(resultsPath));
+
+			//in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
 			// This reader parses from the commandline
 			// in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
 			
@@ -253,10 +254,21 @@ public class Lab1_Baseline {
 				int numTotalHits = results.totalHits;
 				System.out.println(numTotalHits + " total matching documents");
 
+
+
+
+
+				if (qid != 0){
+                    writer.write("\n");
+                }
 				for (int j = 0; j < hits.length; j++) {
 					Document doc = searcher.doc(hits[j].doc);
 					Integer Id = doc.getField("AnswerId").numericValue().intValue();
-					System.out.println(qid + "\tq0\t" + Id + "\t" + (j+1) + "\t" + hits[j].score + "\trun1");
+                    if (j > 0){
+                        writer.write("\n");
+                    }
+					writer.write(qid + "\tq0\t" + Id + "\t" + (j+1) + "\t" + hits[j].score + "\trun1");
+
 				}
 
 				if (line.equals("")) {
@@ -264,6 +276,7 @@ public class Lab1_Baseline {
 				}
 			}
 			reader.close();
+			writer.close();
 		} catch (IOException e) {
 			try {
 				reader.close();
