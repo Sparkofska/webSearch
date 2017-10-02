@@ -1,5 +1,4 @@
-# webSearch
-lab
+# webSearch Lab
 
 ## To run
 Add the files

@@ -28,6 +28,7 @@ public class Lab1_Baseline {
 
 	String indexPath = "./index";
 	String docPath = "./eval/Answers.csv";
+	String queriesPath = "./eval/queries.offline.txt";
 
 	boolean create = true;
 
@@ -115,7 +116,6 @@ public class Lab1_Baseline {
 				line = br.readLine();
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -197,13 +197,17 @@ public class Lab1_Baseline {
 	public void indexSearch(Analyzer analyzer, Similarity similarity) {
 
 		IndexReader reader = null;
+		BufferedReader in = null;
 		try {
 			reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
 			IndexSearcher searcher = new IndexSearcher(reader);
 			searcher.setSimilarity(similarity);
 
-			BufferedReader in = null;
-			in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+			// This reader parses from the commandline
+			// in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+			
+			// This reader parses from queries-file
+			in = new BufferedReader(new FileReader(queriesPath));
 
 			QueryParser parser = new QueryParser("Body", analyzer);
 			while (true) {
@@ -256,6 +260,14 @@ public class Lab1_Baseline {
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
+		}
+		finally {
+			if(in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 		}
 	}
 
