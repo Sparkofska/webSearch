@@ -99,6 +99,7 @@ public class Lab1_Baseline {
 			// ====================================================
 			// Read documents
 			System.out.println("adding documents...");
+			int errorCounter = 0;
 			while (line != null) {
 				int i = line.length();
 
@@ -109,20 +110,22 @@ public class Lab1_Baseline {
 				if (((i >= 2) && (line.charAt(i - 1) == '"') && (line.charAt(i - 2) != '"'))
 						|| ((i == 1) && (line.charAt(i - 1) == '"'))) {
 					// Index the document
-					indexDoc(sb.toString());
+					if(!indexDoc(sb.toString()))
+						errorCounter++;
 
 					// Start a new document
 					sb = new StringBuilder();
 				}
 				line = br.readLine();
 			}
+			System.out.println(errorCounter + " Errors while indexing documents");
 			System.out.println("documents added.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void indexDoc(String rawDocument) {
+	public boolean indexDoc(String rawDocument) {
 
 		Document doc = new Document();
 
@@ -196,6 +199,7 @@ public class Lab1_Baseline {
 			// System.out.println("Error parsing document " + AnswerId);
 			errorParseCounter++;
 		}
+			return errorAddCounter + errorParseCounter == 0;
 	}
 
 	// ====================================================
