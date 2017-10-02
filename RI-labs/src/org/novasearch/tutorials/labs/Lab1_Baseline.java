@@ -261,13 +261,14 @@ public class Lab1_Baseline {
 				if (qid != 0){
                     writer.write("\n");
                 }
+				writer.write("QueryID\tQ0\tDocID\tRank\tScore\tRunID\n");
 				for (int j = 0; j < hits.length; j++) {
 					Document doc = searcher.doc(hits[j].doc);
 					Integer Id = doc.getField("AnswerId").numericValue().intValue();
                     if (j > 0){
                         writer.write("\n");
                     }
-					writer.write(qid + "\tq0\t" + Id + "\t" + (j+1) + "\t" + hits[j].score + "\trun1");
+					writer.write(qid + "\tQ0\t" + Id + "\t" + (j+1) + "\t" + hits[j].score + "\trun1");
 
 				}
 
