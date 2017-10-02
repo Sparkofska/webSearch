@@ -209,6 +209,8 @@ public class Lab1_Baseline {
 			// This reader parses from queries-file
 			in = new BufferedReader(new FileReader(queriesPath));
 
+			Integer qid = -1;
+
 			QueryParser parser = new QueryParser("Body", analyzer);
 			while (true) {
 				System.out.println("Enter query: ");
@@ -227,6 +229,7 @@ public class Lab1_Baseline {
 				Query query;
 				try {
 					query = parser.parse(line);
+					qid++;
 				} catch (org.apache.lucene.queryparser.classic.ParseException e) {
 					System.out.println("Error parsing query string.");
 					continue;
@@ -240,12 +243,8 @@ public class Lab1_Baseline {
 
 				for (int j = 0; j < hits.length; j++) {
 					Document doc = searcher.doc(hits[j].doc);
-					String answer = doc.get("Body");
-					Integer AnswerId = doc.getField("AnswerId").numericValue().intValue();
-					System.out.println("------------------------------------------");
-					System.out.println("AnswerId: " + AnswerId);
-					System.out.println("Answer: " + answer);
-					System.out.println();
+					Integer Id = doc.getField("AnswerId").numericValue().intValue();
+					System.out.println(qid + "\tq0\t" + Id + "\t" + (j+1) + "\t" + hits[j].score + "\trun1");
 				}
 
 				if (line.equals("")) {
