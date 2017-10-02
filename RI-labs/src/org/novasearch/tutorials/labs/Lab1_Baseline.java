@@ -25,7 +25,7 @@ public class Lab1_Baseline {
 
 	String indexPath = "./index";
 	String docPath = "./eval/Answers.csv";
-    String resultsPath = "./eval/myresults.txt";
+	String resultsPath = "./eval/myresults.txt";
 	String queriesPath = "./eval/queries.offline.txt";
 
 	boolean create = true;
@@ -33,8 +33,7 @@ public class Lab1_Baseline {
 	private IndexWriter idx;
 
 	public static void main(String[] args) {
-
-		Analyzer analyzer = new StandardAnalyzer();
+		Analyzer analyzer = new Lab2_Analyser();
 		Similarity similarity = new ClassicSimilarity();
 
 		Lab1_Baseline baseline = new Lab1_Baseline();
@@ -46,6 +45,44 @@ public class Lab1_Baseline {
 
 		// Search the index
 		baseline.indexSearch(analyzer, similarity);
+
+		baseline.doEvaluation();
+
+		System.out.println("terminated.");
+	}
+
+	public void doEvaluation() {
+		String basePath = "~/M/Uni/10Semester/webSearch/";
+		String trecEvalExecutablePath = basePath + "trec_eval/trec_eval";
+		String qrelsPath = basePath + "repository/RI-labs/eval/qrels.offline.txt";
+		String resultsPath = basePath + "repository/RI-labs/eval/myresults.txt";
+		runTrecEval(trecEvalExecutablePath, qrelsPath, resultsPath);
+	}
+
+	public static void runTrecEval(String trecEvalExecutablePath, String qrelsPath, String resultsPath) {
+		Runtime rt = Runtime.getRuntime();
+		try {
+			String[] command = new String[] { "/bin/bash", "-c",
+					trecEvalExecutablePath + " " + qrelsPath + " " + resultsPath };
+			Process pr = rt.exec(command);
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+			BufferedReader stdError = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+
+			String line = null;
+
+			while ((line = stdInput.readLine()) != null) {
+				System.out.println(line);
+			}
+			int exitVal = pr.waitFor();
+			if (exitVal != 0) {
+				System.out.println("trec_eval exits with Error code " + exitVal);
+				while ((line = stdError.readLine()) != null) {
+					System.out.println(line);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void openIndex(Analyzer analyzer, Similarity similarity) {
@@ -108,7 +145,7 @@ public class Lab1_Baseline {
 				if (((i >= 2) && (line.charAt(i - 1) == '"') && (line.charAt(i - 2) != '"'))
 						|| ((i == 1) && (line.charAt(i - 1) == '"'))) {
 					// Index the document
-					if(!indexDoc(sb.toString()))
+					if (!indexDoc(sb.toString()))
 						errorCounter++;
 
 					// Start a new document
@@ -182,10 +219,10 @@ public class Lab1_Baseline {
 			String body = rawDocument.substring(end + 1);
 			doc.add(new TextField("Body", body, Field.Store.YES));
 
-		// ====================================================
-		// Add the document to the index
+			// ====================================================
+			// Add the document to the index
 			if (idx.getConfig().getOpenMode() == IndexWriterConfig.OpenMode.CREATE) {
-				//System.out.println("adding " + AnswerId);
+				// System.out.println("adding " + AnswerId);
 				idx.addDocument(doc);
 			} else {
 				idx.updateDocument(new Term("AnswerId", AnswerId.toString()), doc);
@@ -197,7 +234,7 @@ public class Lab1_Baseline {
 			// System.out.println("Error parsing document " + AnswerId);
 			errorParseCounter++;
 		}
-			return errorAddCounter + errorParseCounter == 0;
+		return errorAddCounter + errorParseCounter == 0;
 	}
 
 	// ====================================================
@@ -211,20 +248,21 @@ public class Lab1_Baseline {
 			IndexSearcher searcher = new IndexSearcher(reader);
 			searcher.setSimilarity(similarity);
 
-            BufferedWriter writer = new BufferedWriter(new FileWriter(resultsPath));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(resultsPath));
+			writer.write("QueryID\tQ0\tDocID\tRank\tScore\tRunID\n");
 
-			//in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+			// in = new BufferedReader(new InputStreamReader(System.in,
+			// StandardCharsets.UTF_8));
 			// This reader parses from the commandline
-			// in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
-			
+			// in = new BufferedReader(new InputStreamReader(System.in,
+			// StandardCharsets.UTF_8));
+
 			// This reader parses from queries-file
 			in = new BufferedReader(new FileReader(queriesPath));
 
-			Integer qid = -1;
-
 			QueryParser parser = new QueryParser("Body", analyzer);
 			while (true) {
-				System.out.println("Enter query: ");
+				// System.out.println("Enter query: ");
 
 				String line = in.readLine();
 
@@ -236,39 +274,33 @@ public class Lab1_Baseline {
 				if (line.length() == 0) {
 					break;
 				}
-				
+
 				System.out.println("Your query: " + line);
+				
+				//parse query id
+				Integer qid = Integer.parseInt(line.substring(0, line.indexOf(":")));
 
 				Query query;
 				try {
 					query = parser.parse(line);
-					qid++;
 				} catch (org.apache.lucene.queryparser.classic.ParseException e) {
 					System.out.println("Error parsing query string.");
 					continue;
 				}
 
-				TopDocs results = searcher.search(query, 100);
+				TopDocs results = searcher.search(query, 3);
 				ScoreDoc[] hits = results.scoreDocs;
 
 				int numTotalHits = results.totalHits;
 				System.out.println(numTotalHits + " total matching documents");
 
-
-
-
-
-				if (qid != 0){
-                    writer.write("\n");
-                }
-				writer.write("QueryID\tQ0\tDocID\tRank\tScore\tRunID\n");
 				for (int j = 0; j < hits.length; j++) {
 					Document doc = searcher.doc(hits[j].doc);
 					Integer Id = doc.getField("AnswerId").numericValue().intValue();
-                    if (j > 0){
-                        writer.write("\n");
-                    }
-					writer.write(qid + "\tQ0\t" + Id + "\t" + (j+1) + "\t" + hits[j].score + "\trun1");
+					if (j > 0) {
+						writer.write("\n");
+					}
+					writer.write(qid + "\tQ0\t" + Id + "\t" + (j + 1) + "\t" + hits[j].score + "\trun1");
 
 				}
 
@@ -285,9 +317,8 @@ public class Lab1_Baseline {
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
-		}
-		finally {
-			if(in != null)
+		} finally {
+			if (in != null)
 				try {
 					in.close();
 				} catch (IOException e) {

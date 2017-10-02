@@ -3,21 +3,20 @@
  */
 package org.novasearch.tutorials.labs;
 
-import java.util.List;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.snowball.SnowballFilter;
+import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.ngram.NGramTokenFilter;
 
 /**
  * @author jmag
@@ -71,7 +70,7 @@ public class Lab2_Analyser extends Analyzer {
 			@Override
 			protected void setReader(final Reader reader) {
 				src.setMaxTokenLength(Lab2_Analyser.this.maxTokenLength);
-				super.setReader(reader);
+				super.setReader(new HTMLStripCharFilter(reader));
 			}
 		};
 	}
@@ -87,7 +86,7 @@ public class Lab2_Analyser extends Analyzer {
 	// Test the different filters
 	public static void main(String[] args) throws IOException {
 
-		final String text = "This is a demonstration, of the TokenStream Lucene-API,";
+		final String text = "This is a <xml>demonstration</xml>, of the TokenStream Lucene-API,";
 
 		Lab2_Analyser analyzer = new Lab2_Analyser();
 		TokenStream stream = analyzer.tokenStream("field", new StringReader(text));
