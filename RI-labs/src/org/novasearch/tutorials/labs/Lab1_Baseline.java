@@ -1,6 +1,7 @@
 package org.novasearch.tutorials.labs;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
@@ -52,36 +53,69 @@ public class Lab1_Baseline {
 	}
 
 	public void doEvaluation() {
-		String basePath = "~/M/Uni/10Semester/webSearch/";
+
+		runTrecEval();
+
+		plotGraph();
+	}
+
+	private void plotGraph() {
+		String basePath = "/home/jonas/M/Uni/10Semester/webSearch/";
+		String pythonPlotPath = basePath + "repository/helloworld.py";
+		String outputPath = basePath + "repository/RI-labs/eval/plot_output.txt";
+
+		String[] command = new String[] { "python3", pythonPlotPath };
+		executeCommand(command, outputPath);
+	}
+
+	private void runTrecEval() {
+		String basePath = "/home/jonas/M/Uni/10Semester/webSearch/";
 		String trecEvalExecutablePath = basePath + "trec_eval/trec_eval";
 		String qrelsPath = basePath + "repository/RI-labs/eval/qrels.offline.txt";
 		String resultsPath = basePath + "repository/RI-labs/eval/myresults.txt";
-		runTrecEval(trecEvalExecutablePath, qrelsPath, resultsPath);
+		String outputPath = basePath + "repository/RI-labs/eval/trec_eval_output.txt";
+
+		String[] command = new String[] { "/bin/bash", "-c",
+				trecEvalExecutablePath + " " + qrelsPath + " " + resultsPath };
+		executeCommand(command, outputPath);
 	}
 
-	public static void runTrecEval(String trecEvalExecutablePath, String qrelsPath, String resultsPath) {
-		Runtime rt = Runtime.getRuntime();
+	private boolean executeCommand(String[] command, String outputPath) {
 		try {
-			String[] command = new String[] { "/bin/bash", "-c",
-					trecEvalExecutablePath + " " + qrelsPath + " " + resultsPath };
+			Runtime rt = Runtime.getRuntime();
 			Process pr = rt.exec(command);
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
 
-			String line = null;
+			File outputFile = new File(outputPath);
+			if (outputFile.exists())
+				outputFile.delete();
+			outputFile.createNewFile();
+			FileWriter out = new FileWriter(outputFile);
 
+			String line = null;
 			while ((line = stdInput.readLine()) != null) {
 				System.out.println(line);
+				out.write(line + System.lineSeparator());
 			}
+			out.flush();
+			out.close();
 			int exitVal = pr.waitFor();
 			if (exitVal != 0) {
-				System.out.println("trec_eval exits with Error code " + exitVal);
+				System.out.print("The command ");
+				for (String s : command)
+					System.out.print(s + " ");
+				System.out.println("exits with Error code " + exitVal + " leaving the following error message:");
 				while ((line = stdError.readLine()) != null) {
 					System.out.println(line);
 				}
+				return false;
 			}
+			System.out.println("Output written to: " + outputFile.getAbsolutePath());
+			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 
@@ -276,8 +310,8 @@ public class Lab1_Baseline {
 				}
 
 				System.out.println("Your query: " + line);
-				
-				//parse query id
+
+				// parse query id
 				Integer qid = Integer.parseInt(line.substring(0, line.indexOf(":")));
 
 				Query query;
@@ -297,10 +331,7 @@ public class Lab1_Baseline {
 				for (int j = 0; j < hits.length; j++) {
 					Document doc = searcher.doc(hits[j].doc);
 					Integer Id = doc.getField("AnswerId").numericValue().intValue();
-					if (j > 0) {
-						writer.write("\n");
-					}
-					writer.write(qid + "\tQ0\t" + Id + "\t" + (j + 1) + "\t" + hits[j].score + "\trun1");
+					writer.write(qid + "\tQ0\t" + Id + "\t" + (j + 1) + "\t" + hits[j].score + "\trun1\n");
 
 				}
 

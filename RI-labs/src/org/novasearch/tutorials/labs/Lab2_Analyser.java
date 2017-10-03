@@ -14,6 +14,7 @@ import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
+import org.apache.lucene.analysis.snowball.SnowballFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -40,13 +41,12 @@ public class Lab2_Analyser extends Analyzer {
 	 * Builds an analyzer with the default stop words ({@link #STOP_WORDS_SET}).
 	 */
 	public Lab2_Analyser() {
-
+		
 	}
 
 	@Override
 	protected TokenStreamComponents createComponents(final String fieldName) {
 
-		
 		// THE FIELD IS IGNORED 
 		// ___BUT___ 
 		// you can provide different TokenStremComponents according to the fieldName
@@ -55,7 +55,7 @@ public class Lab2_Analyser extends Analyzer {
 		
 		TokenStream tok = null;
 		tok = new StandardFilter(src);					// text into non punctuated text
-//		tok = new LowerCaseFilter(tok);					// changes all texto into lowercase
+		tok = new LowerCaseFilter(tok);					// changes all texto into lowercase
 //		tok = new StopFilter(tok, stopSet);				// removes stop words
 
 //		tok = new ShingleFilter(tok, 2, 3);				// creates word-grams with neighboring works
