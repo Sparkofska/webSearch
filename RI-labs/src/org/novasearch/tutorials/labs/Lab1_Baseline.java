@@ -1,10 +1,29 @@
 package org.novasearch.tutorials.labs;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.*;
-import org.apache.lucene.index.*;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -14,13 +33,6 @@ import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class Lab1_Baseline {
 
@@ -62,10 +74,9 @@ public class Lab1_Baseline {
 	private void plotGraph() {
 		String basePath = "/home/jonas/M/Uni/10Semester/webSearch/";
 		String pythonPlotPath = basePath + "repository/helloworld.py";
-		String outputPath = basePath + "repository/RI-labs/eval/plot_output.txt";
 
 		String[] command = new String[] { "python3", pythonPlotPath };
-		executeCommand(command, outputPath);
+		executeCommand(command, null);
 	}
 
 	private void runTrecEval() {
@@ -81,25 +92,30 @@ public class Lab1_Baseline {
 	}
 
 	private boolean executeCommand(String[] command, String outputPath) {
+		FileWriter out = null;
 		try {
 			Runtime rt = Runtime.getRuntime();
 			Process pr = rt.exec(command);
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
 
-			File outputFile = new File(outputPath);
-			if (outputFile.exists())
-				outputFile.delete();
-			outputFile.createNewFile();
-			FileWriter out = new FileWriter(outputFile);
+			boolean writeOutputToFile = outputPath != null;
+			if (writeOutputToFile) {
+				File outputFile = new File(outputPath);
+				if (outputFile.exists())
+					outputFile.delete();
+				outputFile.createNewFile();
+				out = new FileWriter(outputFile);
+			}
 
 			String line = null;
 			while ((line = stdInput.readLine()) != null) {
 				System.out.println(line);
-				out.write(line + System.lineSeparator());
+				if (writeOutputToFile) {
+					out.write(line + System.lineSeparator());
+				}
 			}
 			out.flush();
-			out.close();
 			int exitVal = pr.waitFor();
 			if (exitVal != 0) {
 				System.out.print("The command ");
@@ -111,11 +127,20 @@ public class Lab1_Baseline {
 				}
 				return false;
 			}
-			System.out.println("Output written to: " + outputFile.getAbsolutePath());
+			if (writeOutputToFile) {
+				System.out.println("Output written to: " + outputPath);
+			}
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
+		} finally {
+			if (out != null)
+				try {
+					out.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 		}
 	}
 
