@@ -115,7 +115,6 @@ public class Lab1_Baseline {
 					out.write(line + System.lineSeparator());
 				}
 			}
-			out.flush();
 			int exitVal = pr.waitFor();
 			if (exitVal != 0) {
 				System.out.print("The command ");
@@ -137,6 +136,7 @@ public class Lab1_Baseline {
 		} finally {
 			if (out != null)
 				try {
+					out.flush();
 					out.close();
 				} catch (IOException e) {
 					e.printStackTrace();
