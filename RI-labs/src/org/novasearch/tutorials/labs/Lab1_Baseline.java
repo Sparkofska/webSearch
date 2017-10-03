@@ -76,7 +76,8 @@ public class Lab1_Baseline {
 		String pythonPlotPath = basePath + "repository/helloworld.py";
 
 		String[] command = new String[] { "python3", pythonPlotPath };
-		executeCommand(command, null);
+//		executeCommand(command, null);
+		//TODO
 	}
 
 	private void runTrecEval() {

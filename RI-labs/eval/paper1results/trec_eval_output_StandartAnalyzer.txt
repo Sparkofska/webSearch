@@ -1,0 +1,35 @@
+runid                 	all	run1
+num_q                 	all	31
+num_ret               	all	91
+num_rel               	all	398
+num_rel_ret           	all	11
+map                   	all	0.0219
+gm_map                	all	0.0002
+Rprec                 	all	0.0284
+bpref                 	all	0.0283
+recip_rank            	all	0.2742
+iprec_at_recall_0.00  	all	0.2742
+iprec_at_recall_0.10  	all	0.0968
+iprec_at_recall_0.20  	all	0.0000
+iprec_at_recall_0.30  	all	0.0000
+iprec_at_recall_0.40  	all	0.0000
+iprec_at_recall_0.50  	all	0.0000
+iprec_at_recall_0.60  	all	0.0000
+iprec_at_recall_0.70  	all	0.0000
+iprec_at_recall_0.80  	all	0.0000
+iprec_at_recall_0.90  	all	0.0000
+iprec_at_recall_1.00  	all	0.0000
+P_5                   	all	0.0710
+P_10                  	all	0.0355
+P_15                  	all	0.0237
+P_20                  	all	0.0177
+P_30                  	all	0.0118
+P_100                 	all	0.0035
+P_200                 	all	0.0018
+P_500                 	all	0.0007
+P_1000                	all	0.0004
+
+final StandardTokenizer src = new StandardTokenizer();
+TokenStream tok = null;
+tok = new StandardFilter(src);					// text into non punctuated text
+super.setReader(new HTMLStripCharFilter(reader));
