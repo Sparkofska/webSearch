@@ -8,10 +8,11 @@ import org.apache.lucene.search.similarities.Similarity;
 
 public class Paper1Pipeline {
 
-	private static final String INDEX_PATH = null; // TODO
+	private static final String INDEX_PATH = ""; // TODO
 	private static final String DOCUMENTS_PATH = ""; // TODO
 	private static final String QUERIES_PATH = ""; // TODO
 	private static final String SEARCH_RESULTS_PATH = ""; // TODO
+	private static final String GROUND_TRUTH_PATH = ""; // TODO
 
 	public static void main(String[] args) {
 		Paper1Pipeline pipeline = new Paper1Pipeline();
@@ -38,7 +39,7 @@ public class Paper1Pipeline {
 		File my_results = searchIndex(analyzer, similarity, QUERIES_PATH, SEARCH_RESULTS_PATH);
 
 		// evaluate the results of the search
-		doEvaluation(SEARCH_RESULTS_PATH);
+		doEvaluation(my_results, SEARCH_RESULTS_PATH, GROUND_TRUTH_PATH);
 	}
 
 	private Analyzer getAnalyzer() {
@@ -71,7 +72,7 @@ public class Paper1Pipeline {
 		return null;
 	}
 
-	private void doEvaluation(String searchResultsPath) {
+	private void doEvaluation(File my_results, String searchResultsPath, String groundTruthPath) {
 		// TODO run trec_eval
 		// TODO run plot script
 	}
