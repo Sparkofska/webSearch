@@ -37,7 +37,7 @@ import org.apache.lucene.store.FSDirectory;
 
 public class Paper1Pipeline {
 
-	private static final IndexWriterConfig.OpenMode INDEX_OPEN_MODE = OpenMode.CREATE; // false:
+	protected static final IndexWriterConfig.OpenMode INDEX_OPEN_MODE = OpenMode.CREATE; // false:
 																						// append
 																						// to
 	// existing index
@@ -46,6 +46,8 @@ public class Paper1Pipeline {
 	private static final String QUERIES_PATH = "./eval/queries.offline.txt";
 	private static final String SEARCH_RESULTS_PATH = "./eval/myresults.txt";
 	private static final String GROUND_TRUTH_PATH = "./eval/qrels.offline.txt";
+	
+	private static final int NUMBER_OF_HITS_PER_QUERY = 60;
 
 	public static void main(String[] args) {
 		Paper1Pipeline pipeline = new Paper1Pipeline();
@@ -53,7 +55,7 @@ public class Paper1Pipeline {
 		debugPrintln("terminated");
 	}
 
-	private static void debugPrintln(String msg) {
+	protected static void debugPrintln(String msg) {
 		System.out.println(msg);
 	}
 
@@ -69,18 +71,18 @@ public class Paper1Pipeline {
 		closeIndex(idx);
 
 		// perform the search with given queries
-		File my_results = searchIndex(analyzer, similarity, INDEX_PATH, QUERIES_PATH, SEARCH_RESULTS_PATH);
+		File my_results = searchIndex(analyzer, similarity, INDEX_PATH, QUERIES_PATH, SEARCH_RESULTS_PATH, NUMBER_OF_HITS_PER_QUERY);
 
 		// evaluate the results of the search
 		doEvaluation(my_results, GROUND_TRUTH_PATH);
 	}
 
-	private Analyzer getAnalyzer() {
+	protected Analyzer getAnalyzer() {
 		// TODO return List of Analyzers
 		return new Lab2_Analyser();
 	}
 
-	private Similarity getSimilarity() {
+	protected Similarity getSimilarity() {
 		return new ClassicSimilarity();
 	}
 
@@ -93,7 +95,7 @@ public class Paper1Pipeline {
 	 * @return The indexWriter to access the index. <code>null</code> if there
 	 *         are problems opening the IndexWriter.
 	 */
-	private IndexWriter createOrOpenIndex(Analyzer analyzer, Similarity similarity, String indexPath,
+	protected IndexWriter createOrOpenIndex(Analyzer analyzer, Similarity similarity, String indexPath,
 			OpenMode indexOpenMode) {
 		// Configure the index to be created/opened
 		//
@@ -121,7 +123,7 @@ public class Paper1Pipeline {
 		return idx;
 	}
 
-	private void indexDocuments(IndexWriter idx, String docPath) {
+	protected void indexDocuments(IndexWriter idx, String docPath) {
 		if (idx == null)
 			throw new NullPointerException("IndexWriter must not be NULL.");
 
@@ -234,7 +236,7 @@ public class Paper1Pipeline {
 		return errorAddCounter + errorParseCounter == 0;
 	}
 
-	private void closeIndex(IndexWriter idx) {
+	protected void closeIndex(IndexWriter idx) {
 		try {
 			idx.close();
 		} catch (IOException e) {
@@ -243,8 +245,8 @@ public class Paper1Pipeline {
 
 	}
 
-	private File searchIndex(Analyzer analyzer, Similarity similarity, String indexPath, String queriesPath,
-			String searchResultsPath) {
+	protected File searchIndex(Analyzer analyzer, Similarity similarity, String indexPath, String queriesPath,
+			String searchResultsPath, int numHits) {
 		IndexReader reader = null;
 		BufferedWriter writer = null;
 		BufferedReader in = null;
@@ -291,7 +293,7 @@ public class Paper1Pipeline {
 					continue;
 				}
 
-				TopDocs results = searcher.search(query, 3);
+				TopDocs results = searcher.search(query, numHits);
 				ScoreDoc[] hits = results.scoreDocs;
 
 				int numTotalHits = results.totalHits;
@@ -327,7 +329,7 @@ public class Paper1Pipeline {
 		return null;
 	}
 
-	private void doEvaluation(File my_results, String groundTruthPath) {
+	protected void doEvaluation(File my_results, String groundTruthPath) {
 		if (my_results == null)
 			throw new NullPointerException("Results file is NULL. Probably an Error occured during searchIndex().");
 		// TODO run trec_eval
