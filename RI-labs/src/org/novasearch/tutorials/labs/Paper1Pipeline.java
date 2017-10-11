@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,11 +41,11 @@ public class Paper1Pipeline {
 																						// append
 																						// to
 	// existing index
-	private static final String INDEX_PATH = ""; // TODO
-	private static final String DOCUMENTS_PATH = ""; // TODO
-	private static final String QUERIES_PATH = ""; // TODO
-	private static final String SEARCH_RESULTS_PATH = ""; // TODO
-	private static final String GROUND_TRUTH_PATH = ""; // TODO
+	private static final String INDEX_PATH = "./index";
+	private static final String DOCUMENTS_PATH = "./eval/Answers.csv";
+	private static final String QUERIES_PATH = "./eval/queries.offline.txt";
+	private static final String SEARCH_RESULTS_PATH = "./eval/myresults.txt";
+	private static final String GROUND_TRUTH_PATH = "./eval/qrels.offline.txt";
 
 	public static void main(String[] args) {
 		Paper1Pipeline pipeline = new Paper1Pipeline();
@@ -71,7 +72,7 @@ public class Paper1Pipeline {
 		File my_results = searchIndex(analyzer, similarity, INDEX_PATH, QUERIES_PATH, SEARCH_RESULTS_PATH);
 
 		// evaluate the results of the search
-		doEvaluation(my_results, SEARCH_RESULTS_PATH, GROUND_TRUTH_PATH);
+		doEvaluation(my_results, GROUND_TRUTH_PATH);
 	}
 
 	private Analyzer getAnalyzer() {
@@ -326,9 +327,78 @@ public class Paper1Pipeline {
 		return null;
 	}
 
-	private void doEvaluation(File my_results, String searchResultsPath, String groundTruthPath) {
-		throw new RuntimeException("Not yet implemented. Come here, Programmer, and do your work!");
+	private void doEvaluation(File my_results, String groundTruthPath) {
+		if (my_results == null)
+			throw new NullPointerException("Results file is NULL. Probably an Error occured during searchIndex().");
 		// TODO run trec_eval
+		runTrecEvalOnJonasMachine();
 		// TODO run plot script
+	}
+
+	private void runTrecEvalOnJonasMachine() {
+		String basePath = "/home/jonas/M/Uni/10Semester/webSearch/";
+		String trecEvalExecutablePath = basePath + "trec_eval/trec_eval";
+		String qrelsPath = basePath + "repository/RI-labs/eval/qrels.offline.txt";
+		String resultsPath = basePath + "repository/RI-labs/eval/myresults.txt";
+		String outputPath = basePath + "repository/RI-labs/eval/trec_eval_output.txt";
+
+		String[] command = new String[] { "/bin/bash", "-c",
+				trecEvalExecutablePath + " " + qrelsPath + " " + resultsPath };
+		executeCommand(command, outputPath);
+	}
+
+	private boolean executeCommand(String[] command, String outputPath) {
+		FileWriter out = null;
+		try {
+			Runtime rt = Runtime.getRuntime();
+			Process pr = rt.exec(command);
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+			BufferedReader stdError = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+
+			boolean writeOutputToFile = outputPath != null;
+			if (writeOutputToFile) {
+				File outputFile = new File(outputPath);
+				if (outputFile.exists())
+					outputFile.delete();
+				outputFile.createNewFile();
+				out = new FileWriter(outputFile);
+			}
+
+			String line = null;
+			while ((line = stdInput.readLine()) != null) {
+				debugPrintln(line);
+				if (writeOutputToFile) {
+					out.write(line + System.lineSeparator());
+				}
+			}
+			int exitVal = pr.waitFor();
+			StringBuilder sb = new StringBuilder();
+			if (exitVal != 0) {
+				sb.append("The command ");
+				for (String s : command)
+					sb.append(s + " ");
+				sb.append("exits with Error code " + exitVal + " leaving the following error message:");
+				debugPrintln(sb.toString());
+				while ((line = stdError.readLine()) != null) {
+					debugPrintln(line);
+				}
+				return false;
+			}
+			if (writeOutputToFile) {
+				debugPrintln("Output written to: " + outputPath);
+			}
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		} finally {
+			if (out != null)
+				try {
+					out.flush();
+					out.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		}
 	}
 }
