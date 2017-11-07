@@ -85,15 +85,6 @@ public class Lab4Pipeline extends Paper1Pipeline {
 				Map<String, Integer> expansionTerms = getExpansionTerms(searcher, queryString,
 						N_NUMBER_OF_RELEVANT_DOCS, analyzer, similarity);
 
-				// System.out.println("\n\n --- \n ExpansionTerms \n");
-				// for (Map.Entry<String, Integer> term :
-				// expansionTerms.entrySet()) {
-				// // This is the minimum frequency
-				// if (term.getValue() >= TOP_TERM_MINIMUM_FREQUENCY)
-				// System.out.println(term.getKey() + " -> " + term.getValue() +
-				// " times");
-				// }
-
 				// Do the query expansion by selecting terms from the
 				// expansionTerms
 				String expandedQuery = expandQuery(queryString, expansionTerms);
@@ -133,9 +124,13 @@ public class Lab4Pipeline extends Paper1Pipeline {
 			}
 		});
 
+		// use this for filling up the query to a certain length
 		// int nTermsToAdd = Math.min(MAX_EXPANDED_QUERY_LENGTH -
 		// origQuery.split(" ").length, expansionTermsSorted.size());
-		int nTermsToAdd = Math.min(30, expansionTermsSorted.size());
+		
+		// use this to add a certain number of terms
+		int nTermsToAdd = Math.min(MAX_EXPANDED_QUERY_LENGTH, expansionTermsSorted.size());
+		
 		for (int i = 0; i < nTermsToAdd; i++) {
 			expandedQuery.append(expansionTermsSorted.get(i).getKey() + " ");
 		}
@@ -346,25 +341,6 @@ public class Lab4Pipeline extends Paper1Pipeline {
 
 				TopDocs results = searcher.search(query, numHits);
 				ScoreDoc[] hits = results.scoreDocs;
-
-				// TODO get top words from results
-
-				// TODO filter top words (a lot of them are garbage)
-				// TODO - by adding the unwanted ones to a stopword-List
-				// TODO - by getting the k top words from the p most relevant
-				// documents AND the top words from the least relevant
-				// documents. Remove the intersection (words that occur in every
-				// document) from the top words
-
-				// TODO add the expansion (filtered top words) to the query
-				// (with a weight: query + expansion^alpha , alpha < 1)
-				// - to do the weight: either create a according query string,
-				// or use the API (BooleanQueries...) and add several terms
-				// giving a weight
-
-				// TODO search again with improved query
-
-				// TODO return search results
 
 				for (int j = 0; j < hits.length; j++) {
 					Document doc = searcher.doc(hits[j].doc);
