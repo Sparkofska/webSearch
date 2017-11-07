@@ -9,3 +9,11 @@ Add the files
  - [Learn how to use trec_eval to evaluate your information retrieval system](http://www.rafaelglater.com/en/post/learn-how-to-use-trec_eval-to-evaluate-your-information-retrieval-system)
  - [Lucene Scoring](http://www.lucenetutorial.com/advanced-topics/scoring.html)
  - [Using built-in Analyzers](http://javabeat.net/using-the-built-in-analyzers-in-lucene/)
+
+
+# New Project
+
+ - Use Twitter4J in order to parse the documents
+ - split interest profiles in train and test
+ - evaluation using multi-level-relevance
+ - diverse digest: remove similar/redundant tweets and present the same amount of information in a more compressed way (nuggets)

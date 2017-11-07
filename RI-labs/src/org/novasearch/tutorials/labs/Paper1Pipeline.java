@@ -37,16 +37,17 @@ import org.apache.lucene.store.FSDirectory;
 
 public class Paper1Pipeline {
 
-	protected static final IndexWriterConfig.OpenMode INDEX_OPEN_MODE = OpenMode.CREATE; // false:
-																						// append
-																						// to
+	protected static final IndexWriterConfig.OpenMode INDEX_OPEN_MODE = null;
+	// protected static final IndexWriterConfig.OpenMode INDEX_OPEN_MODE =
+	// OpenMode.CREATE;
+
 	// existing index
 	private static final String INDEX_PATH = "./index";
 	private static final String DOCUMENTS_PATH = "./eval/Answers.csv";
 	private static final String QUERIES_PATH = "./eval/queries.offline.txt";
 	private static final String SEARCH_RESULTS_PATH = "./eval/myresults.txt";
 	private static final String GROUND_TRUTH_PATH = "./eval/qrels.offline.txt";
-	
+
 	private static final int NUMBER_OF_HITS_PER_QUERY = 60;
 
 	public static void main(String[] args) {
@@ -67,11 +68,13 @@ public class Paper1Pipeline {
 
 		// Create the Index from given Documents
 		IndexWriter idx = createOrOpenIndex(analyzer, similarity, INDEX_PATH, INDEX_OPEN_MODE);
-		indexDocuments(idx, DOCUMENTS_PATH);
+		if (INDEX_OPEN_MODE != null)
+			indexDocuments(idx, DOCUMENTS_PATH);
 		closeIndex(idx);
 
 		// perform the search with given queries
-		File my_results = searchIndex(analyzer, similarity, INDEX_PATH, QUERIES_PATH, SEARCH_RESULTS_PATH, NUMBER_OF_HITS_PER_QUERY);
+		File my_results = searchIndex(analyzer, similarity, INDEX_PATH, QUERIES_PATH, SEARCH_RESULTS_PATH,
+				NUMBER_OF_HITS_PER_QUERY);
 
 		// evaluate the results of the search
 		doEvaluation(my_results, GROUND_TRUTH_PATH);
@@ -110,7 +113,7 @@ public class Paper1Pipeline {
 
 		IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 		iwc.setSimilarity(similarity);
-		iwc.setOpenMode(indexOpenMode);
+		iwc.setOpenMode(indexOpenMode == null ? OpenMode.APPEND : indexOpenMode);
 
 		// Open/create the index in the specified location
 		IndexWriter idx = null;
