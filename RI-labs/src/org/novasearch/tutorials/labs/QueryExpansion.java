@@ -15,6 +15,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -23,14 +24,15 @@ import org.apache.lucene.search.similarities.Similarity;
 
 public class QueryExpansion {
 
-	private static final int K_NUMBER_OF_DOCS_FOR_TOP_TERMS = 30;
-	private static final int N_NUMBER_OF_RELEVANT_DOCS = 900;
-	private static final int TOP_TERM_MINIMUM_FREQUENCY = 6;
-	private static final int MAX_EXPANDED_QUERY_LENGTH = 20;
-	private static final String WEIGHT_OF_QUERY_EXPANSION = "0.5";
+	private static final int NUMBER_OF_DOCS_FIRST_SEARCH = 1000;
+	private static final int N_NUMBER_OF_RELEVANT_DOCS = 51;
+	private static final int K_NUMBER_OF_DOCS_FOR_TOP_TERMS = 50;
+	private static final int TOP_TERM_MINIMUM_FREQUENCY = 1;
+	private static final int MAX_EXPANDED_QUERY_LENGTH = 30;
+	private static final Double WEIGHT_OF_QUERY_EXPANSION = 0.5;
 
-	public static String expandCorpusBased(IndexSearcher searcher, final String queryString,
-			Analyzer analyzer, Similarity similarity) {
+	public static String expandCorpusBased(IndexSearcher searcher, final String queryString, Analyzer analyzer,
+			Similarity similarity) {
 		// TODO We should actually implement this approach acoording to Lab4
 		return queryString;
 	}
@@ -49,7 +51,7 @@ public class QueryExpansion {
 
 		TopDocs results = null;
 		try {
-			results = searcher.search(query, N_NUMBER_OF_RELEVANT_DOCS);
+			results = searcher.search(query, NUMBER_OF_DOCS_FIRST_SEARCH);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 			return null;
@@ -161,7 +163,10 @@ public class QueryExpansion {
 	private static String expandQuery(String origQuery, Map<String, Integer> expansionTerms) {
 
 		StringBuilder expandedQuery = new StringBuilder();
+//		expandedQuery.append("(");
 		expandedQuery.append(origQuery);
+//		expandedQuery.append(")^");
+//		expandedQuery.append(1.0);
 		expandedQuery.append(" (");
 
 		// Sort the expansionTerms by frequency of terms
