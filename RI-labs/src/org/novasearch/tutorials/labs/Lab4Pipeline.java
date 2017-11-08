@@ -76,8 +76,8 @@ public class Lab4Pipeline extends Paper1Pipeline {
 					break;
 				}
 
-				Map<String, Integer> expansionTerms = QueryExpansion.getExpansionTerms(searcher, queryString, analyzer, similarity);
-				String expandedQuery = QueryExpansion.expandQuery(queryString, expansionTerms);
+				String expandedQuery = QueryExpansion.expandByPseudoRelevanceFeedback(searcher, queryString, analyzer,
+						similarity);
 
 				System.out.println("Original Query: >> " + queryString + " <<");
 				System.out.println("Expanded Query: >> " + expandedQuery + " <<");
@@ -139,8 +139,8 @@ public class Lab4Pipeline extends Paper1Pipeline {
 				// parse query id
 				Integer qid = Integer.parseInt(line.substring(0, line.indexOf(":")));
 
-				String expandedQuery = QueryExpansion.expandQuery(line,
-						QueryExpansion.getExpansionTerms(searcher, line, analyzer, similarity));
+				String expandedQuery = QueryExpansion.expandByPseudoRelevanceFeedback(searcher, line, analyzer,
+						similarity);
 				debugPrintln("Your query   : " + line);
 				debugPrintln("expandedQuery: " + expandedQuery);
 

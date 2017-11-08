@@ -29,7 +29,13 @@ public class QueryExpansion {
 	private static final int MAX_EXPANDED_QUERY_LENGTH = 20;
 	private static final String WEIGHT_OF_QUERY_EXPANSION = "0.5";
 
-	public static Map<String, Integer> getExpansionTerms(IndexSearcher searcher, String queryString,
+	public static String expandCorpusBased(IndexSearcher searcher, final String queryString,
+			Analyzer analyzer, Similarity similarity) {
+		// TODO We should actually implement this approach acoording to Lab4
+		return queryString;
+	}
+
+	public static String expandByPseudoRelevanceFeedback(IndexSearcher searcher, final String queryString,
 			Analyzer analyzer, Similarity similarity) {
 
 		QueryParser parser = new QueryParser("Body", analyzer);
@@ -87,7 +93,7 @@ public class QueryExpansion {
 		debugPrintTopWords(topWordsFromLeastKDocs, "topWordsFromLeastKDocs", TOP_TERM_MINIMUM_FREQUENCY);
 		debugPrintTopWords(topTerms, "ExpansionTerms", TOP_TERM_MINIMUM_FREQUENCY);
 
-		return topTerms;
+		return expandQuery(queryString, topTerms);
 	}
 
 	private static Map<String, Integer> getTopWords(Document[] docs, Analyzer analyzer) {
@@ -152,7 +158,7 @@ public class QueryExpansion {
 		return topTerms;
 	}
 
-	public static String expandQuery(String origQuery, Map<String, Integer> expansionTerms) {
+	private static String expandQuery(String origQuery, Map<String, Integer> expansionTerms) {
 
 		StringBuilder expandedQuery = new StringBuilder();
 		expandedQuery.append(origQuery);
@@ -182,10 +188,10 @@ public class QueryExpansion {
 
 	private static void debugPrintTopWords(Map<String, Integer> topTerms, String header, int minFreq) {
 		if (false) {
-			
+
 			List<Map.Entry<String, Integer>> entries = new ArrayList<Map.Entry<String, Integer>>(topTerms.entrySet());
 			Collections.sort(entries, new TermFrequencyComparator());
-			
+
 			System.out.println("\n\n --- \n " + header + " \n");
 			for (Map.Entry<String, Integer> term : entries) {
 				// This is the minimum frequency
