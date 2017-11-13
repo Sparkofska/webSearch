@@ -13,7 +13,10 @@ Add the files
 
 # New Project
 
- - Use Twitter4J in order to parse the documents
+ - read project guidlines
+ - use Twitter4J for parsing JSON files (if we want)
  - split interest profiles in train and test
  - evaluation using multi-level-relevance
  - diverse digest: remove similar/redundant tweets and present the same amount of information in a more compressed way (nuggets)
+ - repeat and improve the first two checkpoints (especially the Anlyzers: combine a few, not only test  3 different)
+
