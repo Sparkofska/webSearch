@@ -1,3 +1,18 @@
+# Final Project
+
+See code in Folder finalproject
+
+## Notes
+
+ - read project guidlines
+ - use Twitter4J for parsing JSON files (if we want)
+ - split interest profiles in train and test
+ - evaluation using multi-level-relevance
+ - diverse digest: remove similar/redundant tweets and present the same amount of information in a more compressed way (nuggets)
+ - repeat and improve the first two checkpoints (especially the Anlyzers: combine a few, not only test  3 different)
+ - already reports + 2 more parts (Rank fusion and Diversity of information)
+      - follow lab guide for rank fusion
+
 # webSearch Lab
 
 ## To run
@@ -11,12 +26,4 @@ Add the files
  - [Using built-in Analyzers](http://javabeat.net/using-the-built-in-analyzers-in-lucene/)
 
 
-# New Project
-
- - read project guidlines
- - use Twitter4J for parsing JSON files (if we want)
- - split interest profiles in train and test
- - evaluation using multi-level-relevance
- - diverse digest: remove similar/redundant tweets and present the same amount of information in a more compressed way (nuggets)
- - repeat and improve the first two checkpoints (especially the Anlyzers: combine a few, not only test  3 different)
 
