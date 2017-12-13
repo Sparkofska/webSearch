@@ -4,7 +4,7 @@ See code in Folder finalproject
 
 ## Notes
 
- - read project guidlines
+ - read project guidelines
  - use Twitter4J for parsing JSON files (if we want)
  - split interest profiles in train and test
  - evaluation using multi-level-relevance
