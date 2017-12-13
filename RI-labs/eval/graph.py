@@ -43,10 +43,10 @@ def plotGraph(recallValuesMap):
     figg.show()
     figg.savefig('recall_graph', bbox_extra_artists=(lgdd,), bbox_inches='tight')
 
-def createFileValuesMap(fileName):
+def createFileValuesMap(fileNames):
     fileValuesMap={}
     for file in fileNames:
-        fileValuesMap[file.split(".")[0]]= readRecallValues(file)
+        fileValuesMap[file.split(".txt")[0]]= readRecallValues(file)
     return fileValuesMap 
 
 plotGraph(createFileValuesMap(sys.argv[1:]))
