@@ -9,7 +9,6 @@ RI-labs/eval/Answers.csv
 # Eclipse stuff
 RemoteSystemsTempFiles/
 .metadata
-RI-labs/.classpath
 
 # index gets created everytime the program runs
 RI-labs/index/*
