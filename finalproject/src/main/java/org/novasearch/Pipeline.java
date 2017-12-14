@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -20,6 +19,8 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterObjectFactory;
 
 public class Pipeline {
+
+//	private static final int MAX_TWEETS = 10;
 
 	public static void main(String[] args) {
 		debugPrintln("Hello World!");
@@ -56,10 +57,13 @@ public class Pipeline {
 		// proof that lucene dependencies are working
 		Analyzer analyzer = Parameter.getAnalyzer();
 
-		List<Status> tweets = parseJSONTweets("res/tweets/rts2016-qrels-tweets2016.jsonl");
+		List<Status> tweets = parseJSONTweets(Parameter.PATH_TWEETS);
 		System.out.println(tweets.size() + " Tweets were parsed.");
+		
+		IndexCreator index = new IndexCreator(Parameter.PATH_INDEX, analyzer, Parameter.getSimilarity());
+		index.index(tweets);
 
-		Collection<Profile> profiles = parseProfiles("res/profiles/TREC2016-RTS-topics.json");
+		Collection<Profile> profiles = parseProfiles(Parameter.PATH_PROFILES);
 		System.out.println(profiles.size() + " Profiles were parsed.");
 	}
 
@@ -79,10 +83,13 @@ public class Pipeline {
 		List<Status> tweets = new ArrayList<Status>();
 		BufferedReader reader = new BufferedReader(new FileReader(jsonFilePath));
 		String line = null;
+		int c = 0;
 		while ((line = reader.readLine()) != null) {
 
 			Status tweet = TwitterObjectFactory.createStatus(line);
 			tweets.add(tweet);
+//			if(++c >= MAX_TWEETS)
+//				break;
 		}
 		reader.close();
 
