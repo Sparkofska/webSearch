@@ -35,9 +35,9 @@ public class IndexCreator
 		Directory dir = FSDirectory.open(Paths.get(indexPath));
 
 		IndexWriterConfig config = new IndexWriterConfig(analyzer);
-		if (DirectoryReader.indexExists(dir))
-			config.setOpenMode(OpenMode.CREATE_OR_APPEND);
-		else
+		//if (DirectoryReader.indexExists(dir))
+		//	config.setOpenMode(OpenMode.CREATE_OR_APPEND);
+		//else
 			config.setOpenMode(OpenMode.CREATE);
 		config.setSimilarity(similarity);
 
@@ -86,13 +86,13 @@ public class IndexCreator
 
 		doc.add(new LongPoint("id", id));
 		doc.add(new StoredField("id", Long.toString(id)));
-		doc.add(new TextField("text", text, Field.Store.NO));
+		doc.add(new TextField("text", text, Field.Store.YES));
 		doc.add(new LongPoint("date", date.getTime()));
 		doc.add(new LongPoint("user_id", userId));
 		doc.add(new StringField("user_name", userName, Field.Store.NO));
 		doc.add(new StringField("user_screen_name", userScreenName, Field.Store.NO));
-		doc.add(new TextField("hashtags", hashtagsString.toString(), Field.Store.NO));
-
+		doc.add(new TextField("hashtags", hashtagsString.toString(), Field.Store.YES));
+		
 		return doc;
 	}
 
