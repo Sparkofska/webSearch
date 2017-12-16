@@ -21,10 +21,11 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 
-public class MinHashClusterer
+public class MinHashClusterer implements Clusterer
 {
 
-	private static final int NUMBER_OF_HASH_FUNCTIONS = 50; // TODO Tune this parameter!!
+	private static final int NUMBER_OF_HASH_FUNCTIONS = 50; // TODO Tune this
+															// parameter!!
 	private static final float SIMILARITY_THRESHOLD = 0.7f; // TODO tune this
 	private HashMap<String, Set<String>> shingleCache;
 
@@ -35,7 +36,7 @@ public class MinHashClusterer
 		return this.shingleCache;
 	}
 
-	public List<ScoredDocument> removeDublicates(List<ScoredDocument> set, int minRemainingElements) throws IOException
+	public List<ScoredDocument> removeDublicates(List<ScoredDocument> set, int minRemainingElements)
 	{
 		if (set.size() < minRemainingElements)
 			throw new IllegalArgumentException();
@@ -63,7 +64,7 @@ public class MinHashClusterer
 		return cleaned;
 	}
 
-	public Set<String> createShingles(String text) throws IOException
+	public Set<String> createShingles(String text)
 	{
 		// using the cache, the shingles will only be created once and stored
 		// for the next call
@@ -77,10 +78,17 @@ public class MinHashClusterer
 		Analyzer analyzer = getAnalyzer();
 		TokenStream stream = analyzer.tokenStream(null, new StringReader(text));
 
-		stream.reset();
-		while (stream.incrementToken())
+		try
 		{
-			shingles.add(stream.getAttribute(CharTermAttribute.class).toString());
+			stream.reset();
+			while (stream.incrementToken())
+			{
+				shingles.add(stream.getAttribute(CharTermAttribute.class).toString());
+			}
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
 		}
 
 		cache.put(text, shingles);

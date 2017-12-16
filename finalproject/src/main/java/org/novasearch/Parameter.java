@@ -32,4 +32,9 @@ public class Parameter
 		// TODO tune that parameter
 		return new ClassicSimilarity();
 	}
+
+	public static String getIndexPath(String date)
+	{
+		return PATH_INDEX + date + "/";
+	}
 }

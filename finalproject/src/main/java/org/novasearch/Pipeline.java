@@ -6,9 +6,14 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.Query;
@@ -75,33 +80,45 @@ public class Pipeline
 		System.out.println("Parsing tweets...");
 		List<Status> tweets = parseJSONTweets(Parameter.PATH_TWEETS);
 		System.out.println(tweets.size() + " Tweets were parsed.");
+		Map<String, Collection<Status>> tweetsPerDay = separateByDate(tweets);
 
-		IndexCreator index = new IndexCreator(Parameter.PATH_INDEX, analyzer, Parameter.getSimilarity());
-		index.index(tweets);
-		index.close();
+		System.out.println("Creating indexes...");
+		for (String date : tweetsPerDay.keySet())
+		{
+			Collection<Status> tweetsThisDay = tweetsPerDay.get(date);
+			IndexCreator index = new IndexCreator(Parameter.getIndexPath(date), analyzer, Parameter.getSimilarity());
+			index.index(tweetsThisDay);
+			index.close();
+		}
 
 		List<Profile> profiles = parseProfiles(Parameter.PATH_PROFILES);
 		System.out.println(profiles.size() + " Profiles were parsed.");
 
-		SearchEngine searcher = new SearchEngine(Parameter.PATH_INDEX, Parameter.getSimilarity());
 
-		
-		HashMap<String, HashMap<Profile, List<ScoredDocument>>> digests = new HashMap<String, HashMap<Profile,List<ScoredDocument>>>();
-		HashMap<Profile, List<ScoredDocument>> a = new HashMap<Profile, List<ScoredDocument>>();
-		for(Profile profile : profiles)
+		HashMap<String, HashMap<Profile, List<ScoredDocument>>> digests = new HashMap<String, HashMap<Profile, List<ScoredDocument>>>();
+		for (String date : tweetsPerDay.keySet())
 		{
-			Query query = searcher.toQuery(profile, analyzer);
-			List<ScoredDocument> hits = searcher.search(query, Parameter.N_SEARCH_RESULTS);
-			System.out.println(hits.size() + " hits for " + profile.getTitle());
+			Collection<Status> tweetsThisDay = tweetsPerDay.get(date);
 			
-			MinHashClusterer clus = new MinHashClusterer();
-			hits = clus.removeDublicates(hits, 0);
-			System.out.println(hits.size() + " hits left after removing duplicates");
+			SearchEngine searcher = new SearchEngine(Parameter.getIndexPath(date), Parameter.getSimilarity());
 			
-			a.put(profile, hits);
+			HashMap<Profile, List<ScoredDocument>> a = new HashMap<Profile, List<ScoredDocument>>();
+			for (Profile profile : profiles)
+			{
+				Query query = searcher.toQuery(profile, analyzer);
+				List<ScoredDocument> hits = searcher.search(query, Parameter.N_SEARCH_RESULTS);
+				System.out.println(hits.size() + " hits for " + profile.getTitle());
+
+				Clusterer clus = new MinHashClusterer();
+				hits = clus.removeDublicates(hits, 0);
+				System.out.println(hits.size() + " hits left after removing duplicates");
+
+				a.put(profile, hits);
+			}
+			digests.put(date, a); // TODO put the correct date
+			break; // TODO remove this to everything for each day
 		}
-		digests.put("YYYYMMDD", a); // TODO put the correct date
-		
+
 		makeDigestOutput("output.txt", digests);
 	}
 
@@ -125,13 +142,13 @@ public class Pipeline
 					line.append("\t");
 					line.append(profile.getTopid());
 					line.append("\tQ0\t");
-					line.append(doc.getDocument().get("id")); 
+					line.append(doc.getDocument().get("id"));
 					line.append("\t");
 					line.append(rank++);
 					line.append("\t");
 					line.append(doc.getScore());
 					line.append("\t");
-					line.append("runtag"); //TODO get runtag
+					line.append("runtag"); // TODO get runtag
 
 					writer.write(line.toString());
 					writer.newLine();
@@ -183,6 +200,25 @@ public class Pipeline
 			reader.close();
 		}
 		return null;
+	}
+
+	private Map<String, Collection<Status>> separateByDate(Collection<Status> tweets)
+	{
+		Map<String, Collection<Status>> separated = new HashMap<String, Collection<Status>>();
+		for (Status tweet : tweets)
+		{
+			Date date = tweet.getCreatedAt();
+			String s = new SimpleDateFormat("yyyyMMdd").format(date);
+
+			Collection<Status> thisday = separated.get(s);
+			if (thisday == null)
+			{
+				thisday = new ArrayList<Status>();
+				separated.put(s, thisday);
+			}
+			thisday.add(tweet);
+		}
+		return separated;
 	}
 
 	private List<Profile> parseProfiles(String jsonFilePath) throws FileNotFoundException, IOException

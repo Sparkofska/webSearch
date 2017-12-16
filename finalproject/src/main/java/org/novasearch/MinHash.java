@@ -6,6 +6,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Thanks to http://www.sanfoundry.com/java-program-implement-min-hash/
+ * Code is from there 
+ */
 public class MinHash<T>
 {
 	private int hash[];
