@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -21,9 +22,7 @@ import org.apache.lucene.store.FSDirectory;
 
 public class SearchEngine
 {
-	private static final int N_SEARCH_RESULTS = 10; // TODO tune
 	private IndexSearcher searcher;
-	
 
 	public IndexSearcher getSearcher()
 	{
@@ -55,6 +54,7 @@ public class SearchEngine
 		queryBuilder.append("\"");
 
 		String query = queryBuilder.toString();
+//		System.out.println(query);
 
 		// <default field> is the field that QueryParser will search if you
 		// don't prefix it with a field.
@@ -71,29 +71,24 @@ public class SearchEngine
 		}
 		return null;
 	}
-	
+
 	public Query toQuery(String s, Analyzer analyzer) throws ParseException
 	{
 		QueryParser queryParser = new QueryParser("text", analyzer);
-		return queryParser.parse("\""+s+"\"");
+		return queryParser.parse("\"" + s + "\"");
 	}
 
-	public Collection<ScoreDoc> search(Query query) throws IOException
+	public List<ScoredDocument> search(Query query, int nResults) throws IOException
 	{
-		// TODO return proper value
-		TopDocs results = this.searcher.search(query, N_SEARCH_RESULTS);
+		// run the search
+		TopDocs results = this.searcher.search(query, nResults);
 		ScoreDoc[] hits = results.scoreDocs;
-		
-		System.out.println(results.totalHits);
-		System.out.println(hits.length);
-		
-		// This is how to get the docs
-		Collection<Document> docs = new ArrayList<Document>();
+
+		// retrieve the documents
+		List<ScoredDocument> sdocs = new ArrayList<ScoredDocument>();
 		for (ScoreDoc hit : hits)
-		{
-			Document doc = searcher.doc(hit.doc);
-			docs.add(doc);
-		}
-		return Arrays.asList(hits);
+			sdocs.add(new ScoredDocument(hit.score, searcher.doc(hit.doc)));
+
+		return sdocs;
 	}
 }

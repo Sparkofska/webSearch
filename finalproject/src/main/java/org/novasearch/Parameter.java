@@ -11,6 +11,7 @@ public class Parameter
 	public static final String PATH_TWEETS = "res/tweets/rts2016-qrels-tweets2016.jsonl";
 	public static final String PATH_PROFILES = "res/profiles/TREC2016-RTS-topics.json";
 	public static final String PATH_INDEX = "index/";
+	public static final int N_SEARCH_RESULTS = 50; // TODO tune
 
 	public static Analyzer getAnalyzer()
 	{

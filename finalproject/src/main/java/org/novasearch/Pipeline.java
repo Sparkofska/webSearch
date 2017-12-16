@@ -7,14 +7,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -28,7 +25,7 @@ import twitter4j.TwitterObjectFactory;
 public class Pipeline
 {
 
-	 private static final int MAX_TWEETS = 30;
+	private static final int MAX_TWEETS = 30;
 
 	public static void main(String[] args) throws org.apache.lucene.queryparser.classic.ParseException
 	{
@@ -75,6 +72,7 @@ public class Pipeline
 		// proof that lucene dependencies are working
 		Analyzer analyzer = Parameter.getAnalyzer();
 
+		System.out.println("Parsing tweets...");
 		List<Status> tweets = parseJSONTweets(Parameter.PATH_TWEETS);
 		System.out.println(tweets.size() + " Tweets were parsed.");
 
@@ -87,28 +85,71 @@ public class Pipeline
 
 		SearchEngine searcher = new SearchEngine(Parameter.PATH_INDEX, Parameter.getSimilarity());
 
-		Profile profile = profiles.get(0);
-		Query q = searcher.toQuery(profile, analyzer);
-		System.out.println("Query: " + q);
-		Collection<ScoreDoc> hits = searcher.search(q);
-		IndexSearcher indexSearcher = searcher.getSearcher();
-		for(ScoreDoc h:hits)
+		
+		HashMap<String, HashMap<Profile, List<ScoredDocument>>> digests = new HashMap<String, HashMap<Profile,List<ScoredDocument>>>();
+		HashMap<Profile, List<ScoredDocument>> a = new HashMap<Profile, List<ScoredDocument>>();
+		for(Profile profile : profiles)
 		{
-			Document doc = indexSearcher.doc(h.doc);
-			System.out.println(doc.get("text"));
-			System.out.println("\n---\n");
+			Query query = searcher.toQuery(profile, analyzer);
+			List<ScoredDocument> hits = searcher.search(query, Parameter.N_SEARCH_RESULTS);
+			System.out.println(hits.size() + " hits for " + profile.getTitle());
+			
+			MinHashClusterer clus = new MinHashClusterer();
+			hits = clus.removeDublicates(hits, 0);
+			System.out.println(hits.size() + " hits left after removing duplicates");
+			
+			a.put(profile, hits);
 		}
+		digests.put("YYYYMMDD", a); // TODO put the correct date
+		
+		makeDigestOutput("output.txt", digests);
+	}
+
+	// YYYYMMDD topic_id Q0 tweet_id rank score runtag
+	private void makeDigestOutput(String path, HashMap<String, HashMap<Profile, List<ScoredDocument>>> digests)
+			throws IOException
+	{
+		BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+		for (String date : digests.keySet())
+		{
+			HashMap<Profile, List<ScoredDocument>> a = digests.get(date);
+			for (Profile profile : a.keySet())
+			{
+				List<ScoredDocument> docs = a.get(profile);
+				int rank = 1;
+				for (ScoredDocument doc : docs)
+				{
+					StringBuilder line = new StringBuilder();
+
+					line.append(date);
+					line.append("\t");
+					line.append(profile.getTopid());
+					line.append("\tQ0\t");
+					line.append(doc.getDocument().get("id")); 
+					line.append("\t");
+					line.append(rank++);
+					line.append("\t");
+					line.append(doc.getScore());
+					line.append("\t");
+					line.append("runtag"); //TODO get runtag
+
+					writer.write(line.toString());
+					writer.newLine();
+				}
+			}
+		}
+		writer.close();
 	}
 
 	private void writeTweets(List<Status> tweets) throws IOException
 	{
 		BufferedWriter writer = new BufferedWriter(new FileWriter("res/tweets/textonly.txt"));
-		for(Status t:tweets)
+		for (Status t : tweets)
 		{
 			StringBuilder line = new StringBuilder(t.getId() + " : " + t.getText());
-			for(HashtagEntity h:t.getHashtagEntities())
-				line.append(" #"+h.getText());
-			
+			for (HashtagEntity h : t.getHashtagEntities())
+				line.append(" #" + h.getText());
+
 			writer.write(line.toString());
 			writer.newLine();
 		}
@@ -127,8 +168,8 @@ public class Pipeline
 			{
 				Status tweet = TwitterObjectFactory.createStatus(line);
 				tweets.add(tweet);
-//				 if(++c >= MAX_TWEETS)
-//				 break;
+				// if(++c >= MAX_TWEETS)
+				// break;
 			}
 			return tweets;
 		}
