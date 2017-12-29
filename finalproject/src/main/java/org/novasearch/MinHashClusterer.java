@@ -15,6 +15,7 @@ import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
@@ -114,6 +115,7 @@ public class MinHashClusterer implements Clusterer
 
 				tok = new LowerCaseFilter(tok);
 				tok = new StopFilter(tok, stopSet);
+				tok = new PorterStemFilter(tok); // TODO tune and Test stemming
 				tok = new ShingleFilter(tok, 4, 4);
 				tok = new RemoveSingleWordsFilter(tok);
 

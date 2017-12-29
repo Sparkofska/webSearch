@@ -37,4 +37,21 @@ public class Parameter
 	{
 		return PATH_INDEX + date + "/";
 	}
+
+	public static Analyzer getTopWordsAnalyzer()
+	{
+		// TODO build a nice analyzer
+		return new StandardAnalyzer();
+	}
+
+	public static Clusterer getClusterer()
+	{
+		// return null;
+		return new MinHashClusterer();
+	}
+
+	public static boolean isQueryExpansionEnabled()
+	{
+		return true;
+	}
 }

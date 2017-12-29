@@ -16,12 +16,13 @@ See code in Folder finalproject
 
 # TODO
 
-[ ] add Analyzers (for index and queries)
-[ ] build query from Profiles
-[ ] (Dusan) check how evaluation works (.py script)
-[ ] submitting query and retrieve docs in proper way
-[ ] (Dasa)how to implement K-Means
-[ ] (Jonas)and MinHash on Documents?
+- [ ] add Analyzers (for index and queries)
+- [ ] build query from Profiles
+- [ ] (Dusan) check how evaluation works (.py script)
+- [x] (Jonas) implement query expansion
+- [x] (Jonas) submitting query and retrieve docs in proper way
+- [ ] (Dasa)how to implement K-Means
+- [x] (Jonas)and MinHash on Documents?
     - [MinHash for dummies](http://matthewcasperson.blogspot.pt/2013/11/minhash-for-dummies.html)
     - [Implementation](http://www.sanfoundry.com/java-program-implement-min-hash/)
     - [LHS-Implementation](https://github.com/tdebatty/java-LSH)
